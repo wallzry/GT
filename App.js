@@ -14,6 +14,7 @@ import {
 } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
 import { Swipeable, GestureHandlerRootView } from "react-native-gesture-handler"
+import { Dimensions } from "react-native"
 
 const WeightDisplay = ({ weight }) => {
   const [wholePart, fractionalPart] = weight.toFixed(2).split(".")
@@ -33,8 +34,97 @@ export default function App() {
   const [speed, setSpeed] = useState("")
   const [oneRepMax, setOneRepMax] = useState("")
   const [rest, setRest] = useState("")
-  const [exercisesList, setExercisesList] = useState([])
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [exercisesList, setExercisesList] = useState([
+    {
+      id: "1",
+      name: "Kniebeugen",
+      weight: 60,
+      repetitions: 10,
+      sets: 3,
+      speed: "1-1-3",
+      oneRepMax: 100,
+      rest: 60,
+      isExpanded: false,
+    },
+    {
+      id: "2",
+      name: "Bankdrücken",
+      weight: 70,
+      repetitions: 8,
+      sets: 3,
+      speed: "2-0-2",
+      oneRepMax: 120,
+      rest: 90,
+      isExpanded: true,
+    },
+    {
+      id: "3",
+      name: "Kreuzheben",
+      weight: 80,
+      repetitions: 6,
+      sets: 4,
+      speed: "3-1-1",
+      oneRepMax: 150,
+      rest: 120,
+      isExpanded: false,
+    },
+    {
+      id: "4",
+      name: "Schulterdrücken",
+      weight: 40,
+      repetitions: 12,
+      sets: 3,
+      speed: "4-0-1",
+      oneRepMax: 70,
+      rest: 60,
+      isExpanded: false,
+    },
+    {
+      id: "5",
+      name: "Klimmzüge",
+      weight: 0,
+      repetitions: 10,
+      sets: 3,
+      speed: "2-2-4",
+      oneRepMax: null,
+      rest: 90,
+      isExpanded: false,
+    },
+  ])
+
+  const toggleExpand = (id) => {
+    setExercisesList(
+      exercisesList.map((item) => {
+        if (item.id === id) {
+          return { ...item, isExpanded: !item.isExpanded }
+        }
+        return item
+      })
+    )
+  }
+
+  const formatSpeedInput = (text) => {
+    const numbers = text.replace(/[^0-9]/g, "") // Entferne alle Nicht-Ziffern
+    let formatted = numbers.substring(0, 3) // Beschränke die Länge auf drei Ziffern
+
+    // Füge Bindestriche hinzu, abhängig von der Länge der Zahlenfolge
+    if (formatted.length === 1) {
+      // Nur eine Ziffer vorhanden
+      formatted = `${formatted}-`
+    } else if (formatted.length === 2) {
+      // Zwei Ziffern vorhanden
+      formatted = `${formatted.substring(0, 1)}-${formatted.substring(1)}-`
+    } else if (formatted.length === 3) {
+      // Drei Ziffern vorhanden
+      formatted = `${formatted.substring(0, 1)}-${formatted.substring(
+        1,
+        2
+      )}-${formatted.substring(2)}`
+    }
+
+    setSpeed(formatted) // Aktualisiere den Geschwindigkeitszustand mit dem formatierten Text
+  }
 
   const addExercise = () => {
     let errorMessage = ""
@@ -144,34 +234,69 @@ export default function App() {
                   )
                 }
               >
-                <View style={styles.listItem}>
-                  <View style={styles.exerciseLeft}>
-                    <WeightDisplay weight={item.weight} />
-                    <Text style={styles.exerciseText}>{item.name}</Text>
+                <TouchableOpacity onPress={() => toggleExpand(item.id)}>
+                  <View
+                    style={[
+                      styles.listItem,
+                      item.isExpanded
+                        ? {
+                            marginBottom: 0,
+                            borderBottomLeftRadius: 0,
+                            borderBottomRightRadius: 0,
+                          }
+                        : {
+                            marginBottom: 10,
+                            borderBottomLeftRadius: 5,
+                            borderBottomRightRadius: 5,
+                          },
+                    ]}
+                  >
+                    <View style={styles.exerciseLeft}>
+                      <WeightDisplay weight={item.weight} />
+                      <Text style={styles.exerciseText}>{item.name}</Text>
+                    </View>
+                    <View style={styles.weightButtons}>
+                      <TouchableOpacity
+                        onPress={() => changeWeight(item.id, 1)}
+                      >
+                        <Text style={styles.plusButton}>+</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => changeWeight(item.id, -1)}
+                      >
+                        <Text style={styles.minusButton}>-</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                  <View style={styles.weightButtons}>
-                    <TouchableOpacity
-                      style={styles.plusButton}
-                      onPress={() => changeWeight(item.id, 1)}
-                    >
-                      <AntDesign name="plus" size={50} color="white" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.minusButton}
-                      onPress={() => changeWeight(item.id, -1)}
-                    >
-                      <AntDesign name="minus" size={50} color="white" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                  {/* Zeige weitere Details, wenn isExpanded true ist */}
+                  {item.isExpanded && (
+                    <View style={styles.additionalDetails}>
+                      <Text style={styles.detailText}>
+                        Wiederholungen: {item.repetitions}
+                      </Text>
+                      <Text style={styles.detailText}>Sätze: {item.sets}</Text>
+                      <Text style={styles.detailText}>
+                        Geschwindigkeit: {item.speed}
+                      </Text>
+                      <Text style={styles.detailText}>
+                        1RM: {item.oneRepMax || "N/A"} kg
+                      </Text>
+                      <Text style={styles.detailText}>
+                        Ruhe: {item.rest} Sekunden
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               </Swipeable>
             )}
+            showsVerticalScrollIndicator={false}
           />
+
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => setIsModalVisible(true)}
           >
-            <AntDesign name="pluscircle" size={50} color="white" />
+            <AntDesign name="pluscircle" size={50} color="#93D5E1" />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -188,6 +313,7 @@ export default function App() {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Neue Übung</Text>
             <TextInput
               style={styles.input}
               placeholder="Übung"
@@ -218,10 +344,12 @@ export default function App() {
             />
             <TextInput
               style={styles.input}
-              placeholder="Geschwindigkeit"
+              placeholder="Geschwindigkeit (z.B. 2-0-2)"
               value={speed}
-              onChangeText={setSpeed}
+              onChangeText={formatSpeedInput} // Verwende die angepasste Funktion
+              keyboardType="numeric"
             />
+
             <TextInput
               style={styles.input}
               placeholder="1-Repetition-Maximum"
@@ -260,7 +388,9 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   safeAreaBottom: {
-    backgroundColor: "black",
+    // backgroundColor: "black",
+    backgroundColor: "black", // Transparenter Hintergrund
+    height: 0, // Keine zusätzliche Höhe
   },
   navbar: {
     flexDirection: "row",
@@ -285,7 +415,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
-    backgroundColor: "lightgray",
+    backgroundColor: "white",
   },
   title: {
     fontSize: 24,
@@ -313,14 +443,14 @@ const styles = StyleSheet.create({
   },
 
   listItem: {
-    width: "80%",
-    alignSelf: "center",
+    width: 300,
+    alignSelf: "center", // Centers the listItem in its container horizontally
     padding: 10,
     backgroundColor: "#0F1321",
     borderRadius: 5,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-between", // Horizontally centers the content of the listItem
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -329,6 +459,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 1.41,
     elevation: 2,
+  },
+  additionalDetails: {
+    backgroundColor: "#0F1321",
+    padding: 10,
+    marginBottom: 10,
+    width: "100%",
+    alignSelf: "center",
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+    marginTop: 0, // Kein zusätzlicher Abstand zum oberen ListItem
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  detailText: {
+    fontSize: 16,
+    color: "white",
+    paddingVertical: 2,
   },
   exerciseLeft: {
     display: "flex",
@@ -370,9 +523,17 @@ const styles = StyleSheet.create({
   },
   plusButton: {
     // backgroundColor: "red",
+    fontSize: 60,
+    fontWeight: "bold",
+    color: "white",
+    lineHeight: 60, // Einstellen auf die gleiche Größe wie fontSize oder leicht größer/kleiner
   },
   minusButton: {
     // backgroundColor: "blue",
+    fontSize: 60,
+    fontWeight: "bold",
+    color: "white",
+    lineHeight: 60, // Einstellen auf die gleiche Größe wie fontSize oder leicht größer/kleiner
   },
   weightButtonText: {
     color: "white",
@@ -396,7 +557,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   iconButton: {
-    backgroundColor: "#93D5E1",
+    backgroundColor: "white",
     padding: 0,
     borderRadius: 50,
     justifyContent: "center",
@@ -406,12 +567,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    position: "absolute", // Absolute Positionierung
+    bottom: 20, // Abstand vom unteren Rand des Bildschirms
+    alignSelf: "center", // Zentriert den Button horizontal im Container
+    zIndex: 10, // Stellt sicher, dass der Button über den ListItems liegt
   },
+
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 22,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   modalView: {
     margin: 20,
@@ -429,11 +600,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
   },
   optionalHeading: {
     fontSize: 18,
