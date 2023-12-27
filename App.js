@@ -13,8 +13,13 @@ import {
   Modal,
 } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+
 import { Swipeable, GestureHandlerRootView } from "react-native-gesture-handler"
 import { Dimensions } from "react-native"
+
+const { width: screenWidth } = Dimensions.get("window")
+const desiredWidth = screenWidth * 0.9
 
 const WeightDisplay = ({ weight }) => {
   const [wholePart, fractionalPart] = weight.toFixed(2).split(".")
@@ -271,19 +276,46 @@ export default function App() {
                   {/* Zeige weitere Details, wenn isExpanded true ist */}
                   {item.isExpanded && (
                     <View style={styles.additionalDetails}>
-                      <Text style={styles.detailText}>
-                        Wiederholungen: {item.repetitions}
-                      </Text>
-                      <Text style={styles.detailText}>Sätze: {item.sets}</Text>
-                      <Text style={styles.detailText}>
-                        Geschwindigkeit: {item.speed}
-                      </Text>
-                      <Text style={styles.detailText}>
-                        1RM: {item.oneRepMax || "N/A"} kg
-                      </Text>
-                      <Text style={styles.detailText}>
-                        Ruhe: {item.rest} Sekunden
-                      </Text>
+                      <View style={styles.detailTextWrapper}>
+                        <Text style={styles.detailText}>
+                          <AntDesign name="reload1" size={20} color="black" />{" "}
+                          Reps: {item.repetitions}
+                        </Text>
+                      </View>
+                      <View style={styles.detailTextWrapper}>
+                        <Text style={styles.detailText}>
+                          <AntDesign name="sync" size={20} color="black" />{" "}
+                          Sätze: {item.sets}
+                        </Text>
+                      </View>
+                      <View style={styles.detailTextWrapper}>
+                        <Text style={styles.detailText}>
+                          <AntDesign name="dashboard" size={20} color="black" />{" "}
+                          Geschwindigkeit: {item.speed}
+                        </Text>
+                      </View>
+
+                      <View style={styles.detailTextWrapper}>
+                        <Text style={styles.detailText}>
+                          <MaterialCommunityIcons
+                            name="fire-circle"
+                            size={20}
+                            color="black"
+                          />{" "}
+                          1-RM: {item.oneRepMax || "N/A"} kg
+                        </Text>
+                      </View>
+
+                      <View style={styles.detailTextWrapper}>
+                        <Text style={styles.detailText}>
+                          <AntDesign
+                            name="pausecircleo"
+                            size={20}
+                            color="black"
+                          />{" "}
+                          Pause: {item.rest} Sekunden
+                        </Text>
+                      </View>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -443,7 +475,8 @@ const styles = StyleSheet.create({
   },
 
   listItem: {
-    width: 300,
+    width: desiredWidth,
+    alignSelf: "center",
     alignSelf: "center", // Centers the listItem in its container horizontally
     padding: 10,
     backgroundColor: "#0F1321",
@@ -461,10 +494,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   additionalDetails: {
+    width: desiredWidth,
+    alignSelf: "center",
     backgroundColor: "#0F1321",
     padding: 10,
     marginBottom: 10,
-    width: "100%",
     alignSelf: "center",
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
@@ -477,12 +511,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 1.41,
     elevation: 2,
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  detailTextWrapper: {
+    backgroundColor: "#D9DDEF",
+    borderRadius: 100,
+    margin: 5,
+    paddingHorizontal: 5,
   },
   detailText: {
-    fontSize: 16,
-    color: "white",
-    paddingVertical: 2,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "black",
   },
+
   exerciseLeft: {
     display: "flex",
   },
