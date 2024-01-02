@@ -96,6 +96,28 @@ export default function App() {
       rest: 90,
       isExpanded: false,
     },
+    {
+      id: "6",
+      name: "nur1",
+      weight: 34,
+      repetitions: 10,
+      sets: "",
+      speed: "",
+      oneRepMax: "",
+      rest: "",
+      isExpanded: "",
+    },
+    {
+      id: "7",
+      name: "keins",
+      weight: 22,
+      repetitions: "",
+      sets: "",
+      speed: "",
+      oneRepMax: "",
+      rest: "",
+      isExpanded: "",
+    },
   ])
 
   const toggleExpand = (id) => {
@@ -239,20 +261,28 @@ export default function App() {
                   )
                 }
               >
-                <TouchableOpacity onPress={() => toggleExpand(item.id)}>
+                <TouchableOpacity
+                  onPress={() => toggleExpand(item.id)}
+                  activeOpacity={0.9}
+                >
                   <View
                     style={[
                       styles.listItem,
-                      item.isExpanded
+                      item.isExpanded &&
+                      (item.repetitions ||
+                        item.sets ||
+                        item.speed ||
+                        item.oneRepMax ||
+                        item.rest)
                         ? {
                             marginBottom: 0,
                             borderBottomLeftRadius: 0,
                             borderBottomRightRadius: 0,
                           }
                         : {
-                            marginBottom: 10,
-                            borderBottomLeftRadius: 5,
-                            borderBottomRightRadius: 5,
+                            marginBottom: 0,
+                            borderBottomLeftRadius: 0,
+                            borderBottomRightRadius: 0,
                           },
                     ]}
                   >
@@ -274,48 +304,86 @@ export default function App() {
                     </View>
                   </View>
                   {/* Zeige weitere Details, wenn isExpanded true ist */}
-                  {item.isExpanded && (
-                    <View style={styles.additionalDetails}>
-                      <View style={styles.detailTextWrapper}>
-                        <Text style={styles.detailText}>
-                          <AntDesign name="reload1" size={20} color="black" />{" "}
-                          Reps: {item.repetitions}
-                        </Text>
+                  {item.isExpanded &&
+                    (item.repetitions ||
+                      item.sets ||
+                      item.speed ||
+                      item.oneRepMax ||
+                      item.rest) && (
+                      <View style={styles.additionalDetails}>
+                        {item.repetitions && (
+                          <View style={styles.detailTextWrapper}>
+                            <Text style={styles.detailText}>
+                              <AntDesign
+                                name="reload1"
+                                size={20}
+                                color="#0F1321"
+                              />{" "}
+                              Reps: {item.repetitions}
+                            </Text>
+                          </View>
+                        )}
+                        {item.sets && (
+                          <View style={styles.detailTextWrapper}>
+                            <Text style={styles.detailText}>
+                              <AntDesign
+                                name="sync"
+                                size={20}
+                                color="#0F1321"
+                              />{" "}
+                              Sätze: {item.sets}
+                            </Text>
+                          </View>
+                        )}
+                        {item.speed && (
+                          <View style={styles.detailTextWrapper}>
+                            <Text style={styles.detailText}>
+                              <AntDesign
+                                name="dashboard"
+                                size={20}
+                                color="#0F1321"
+                              />{" "}
+                              Geschwindigkeit: {item.speed}
+                            </Text>
+                          </View>
+                        )}
+                        {item.oneRepMax && (
+                          <View style={styles.detailTextWrapper}>
+                            <Text style={styles.detailText}>
+                              <MaterialCommunityIcons
+                                name="fire-circle"
+                                size={20}
+                                color="#0F1321"
+                              />{" "}
+                              1-RM: {item.oneRepMax || "N/A"} kg
+                            </Text>
+                          </View>
+                        )}
+                        {item.rest && (
+                          <View style={styles.detailTextWrapper}>
+                            <Text style={styles.detailText}>
+                              <AntDesign
+                                name="pausecircleo"
+                                size={20}
+                                color="#0F1321"
+                              />
+                              Pause: {item.rest} Sekunden
+                            </Text>
+                          </View>
+                        )}
                       </View>
-                      <View style={styles.detailTextWrapper}>
-                        <Text style={styles.detailText}>
-                          <AntDesign name="sync" size={20} color="black" />{" "}
-                          Sätze: {item.sets}
-                        </Text>
-                      </View>
-                      <View style={styles.detailTextWrapper}>
-                        <Text style={styles.detailText}>
-                          <AntDesign name="dashboard" size={20} color="black" />{" "}
-                          Geschwindigkeit: {item.speed}
-                        </Text>
-                      </View>
-
-                      <View style={styles.detailTextWrapper}>
-                        <Text style={styles.detailText}>
-                          <MaterialCommunityIcons
-                            name="fire-circle"
-                            size={20}
-                            color="black"
-                          />{" "}
-                          1-RM: {item.oneRepMax || "N/A"} kg
-                        </Text>
-                      </View>
-
-                      <View style={styles.detailTextWrapper}>
-                        <Text style={styles.detailText}>
-                          <AntDesign
-                            name="pausecircleo"
-                            size={20}
-                            color="black"
-                          />{" "}
-                          Pause: {item.rest} Sekunden
-                        </Text>
-                      </View>
+                    )}
+                  {(item.repetitions ||
+                    item.sets ||
+                    item.speed ||
+                    item.oneRepMax ||
+                    item.rest) && (
+                    <View style={styles.arrowContainer}>
+                      {item.isExpanded ? (
+                        <AntDesign name="up" size={24} color="white" />
+                      ) : (
+                        <AntDesign name="down" size={24} color="white" />
+                      )}
                     </View>
                   )}
                 </TouchableOpacity>
@@ -420,16 +488,15 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   safeAreaBottom: {
-    // backgroundColor: "black",
-    backgroundColor: "black", // Transparenter Hintergrund
-    height: 0, // Keine zusätzliche Höhe
+    backgroundColor: "#0F1321", // Transparenter Hintergrund
+    // height: 0, // Keine zusätzliche Höhe
   },
   navbar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 10,
-    backgroundColor: "black",
+    backgroundColor: "#0F1321",
   },
   navTitleContainer: {
     backgroundColor: "#93D5E1",
@@ -438,7 +505,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   navTitle: {
-    color: "black",
+    color: "#0F1321",
     fontSize: 20,
     fontWeight: "bold",
   },
@@ -498,10 +565,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     backgroundColor: "#0F1321",
     padding: 10,
-    marginBottom: 10,
+
     alignSelf: "center",
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5,
+    // borderBottomLeftRadius: 5,
+    // borderBottomRightRadius: 5,
     marginTop: 0, // Kein zusätzlicher Abstand zum oberen ListItem
     shadowColor: "#000",
     shadowOffset: {
@@ -515,6 +582,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
   },
+  arrowContainer: {
+    marginTop: 0, // Kein zusätzlicher Abstand zum oberen ListItem
+
+    // Positionieren Sie den Pfeil am unteren Rand
+    alignItems: "center", // Zentriert den Pfeil horizontal
+    justifyContent: "center", // Zentriert den Pfeil vertikal
+    backgroundColor: "#0F1321",
+    marginBottom: 10,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+  },
   detailTextWrapper: {
     backgroundColor: "#D9DDEF",
     borderRadius: 100,
@@ -524,7 +602,7 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "black",
+    color: "#0F1321",
   },
 
   exerciseLeft: {
