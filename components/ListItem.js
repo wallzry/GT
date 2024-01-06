@@ -14,7 +14,13 @@ import WeightDisplay from "./WeightDisplay"
 const { width: screenWidth } = Dimensions.get("window")
 const desiredWidth = screenWidth * 0.9
 
-const ListItem = ({ item, toggleExpand, deleteExercise, changeWeight }) => {
+const ListItem = ({
+  item,
+  toggleExpand,
+  deleteExercise,
+  changeWeight,
+  startEditing,
+}) => {
   const renderRightActions = (progress, dragX) => {
     const scale = dragX.interpolate({
       inputRange: [-100, 0],
@@ -47,6 +53,14 @@ const ListItem = ({ item, toggleExpand, deleteExercise, changeWeight }) => {
         renderRightActions(progress, dragX, () => deleteExercise(item.id))
       }
     >
+      <TouchableOpacity
+        style={styles.editButtonWrapper}
+        onPress={() => startEditing(item.id)}
+      >
+        <View style={styles.editButton}>
+          <AntDesign name="edit" size={14} color="#D9DDEF" />
+        </View>
+      </TouchableOpacity>
       <TouchableOpacity
         onPress={() => toggleExpand(item.id)}
         activeOpacity={0.9}
@@ -139,6 +153,7 @@ const ListItem = ({ item, toggleExpand, deleteExercise, changeWeight }) => {
               )}
             </View>
           )}
+        {/* Zeige den Pfeil falls mind. eine optionale Angabe */}
         {(item.repetitions ||
           item.sets ||
           item.speed ||
@@ -146,12 +161,22 @@ const ListItem = ({ item, toggleExpand, deleteExercise, changeWeight }) => {
           item.rest) && (
           <View style={styles.arrowContainer}>
             {item.isExpanded ? (
-              <AntDesign name="up" size={24} color="white" />
+              <AntDesign name="up" size={12} color="#D9DDEF" />
             ) : (
-              <AntDesign name="down" size={24} color="white" />
+              <AntDesign name="down" size={12} color="#D9DDEF" />
             )}
           </View>
         )}
+        {/* Zeige den Pfeil nicht wenn keine optionale Angabe */}
+        {!item.repetitions &&
+          !item.sets &&
+          !item.speed &&
+          !item.oneRepMax &&
+          !item.rest && (
+            <View style={styles.noArrowContainer}>
+              <AntDesign name="minus" size={12} color="#D9DDEF" />
+            </View>
+          )}
       </TouchableOpacity>
     </Swipeable>
   )
@@ -161,7 +186,10 @@ const styles = StyleSheet.create({
   listItem: {
     width: desiredWidth,
     alignSelf: "center",
-    padding: 10,
+    paddingTop: 10,
+    paddingRight: 20,
+    paddingLeft: 20,
+    paddingBottom: 0,
     backgroundColor: "#0F1321",
     borderRadius: 5,
     flexDirection: "row",
@@ -196,6 +224,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#0F1321",
+    marginBottom: 10,
+    paddingBottom: 5,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+  },
+  noArrowContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#0F1321",
+    paddingBottom: 5,
     marginBottom: 10,
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
@@ -250,6 +288,22 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 5,
     borderBottomRightRadius: 5,
     padding: 15,
+  },
+  editButton: {
+    backgroundColor: "#0F1321",
+    width: 25,
+    height: 25,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 100,
+    padding: 5,
+    marginBottom: -14,
+    borderColor: "#D9DDEF",
+    borderWidth: 1,
+  },
+  editButtonWrapper: {
+    zIndex: 10,
   },
 })
 

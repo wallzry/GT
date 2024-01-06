@@ -29,6 +29,7 @@ export default function App() {
   const [oneRepMax, setOneRepMax] = useState("")
   const [rest, setRest] = useState("")
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [editingExerciseId, setEditingExerciseId] = useState(null)
   const [exercisesList, setExercisesList] = useState([
     {
       id: "1",
@@ -118,6 +119,47 @@ export default function App() {
         return item
       })
     )
+  }
+
+  // Funktion zum Starten des Bearbeitungsmodus
+  const startEditing = (id) => {
+    const exerciseToEdit = exercisesList.find((e) => e.id === id)
+    if (exerciseToEdit) {
+      setEditingExerciseId(id)
+      setExercise(exerciseToEdit.name)
+      setWeight(exerciseToEdit.weight.toString()) // Wandeln Sie Zahlen in Strings um, da TextInput Strings erwartet
+      setRepetitions(exerciseToEdit.repetitions.toString())
+      setSets(exerciseToEdit.sets.toString())
+      setSpeed(exerciseToEdit.speed)
+      setOneRepMax(
+        exerciseToEdit.oneRepMax ? exerciseToEdit.oneRepMax.toString() : ""
+      )
+      setRest(exerciseToEdit.rest.toString())
+      setIsModalVisible(true)
+    }
+  }
+
+  // Funktion zum Speichern der Bearbeitung
+  const saveEdits = () => {
+    setExercisesList(
+      exercisesList.map((item) =>
+        item.id === editingExerciseId
+          ? {
+              ...item,
+              name: exercise,
+              weight: parseFloat(weight),
+              repetitions,
+              sets,
+              speed,
+              oneRepMax: oneRepMax ? parseFloat(oneRepMax) : null,
+              rest,
+            }
+          : item
+      )
+    )
+    setIsModalVisible(false)
+    setEditingExerciseId(null)
+    clearInputs()
   }
 
   const formatSpeedInput = (text) => {
@@ -225,6 +267,7 @@ export default function App() {
                 toggleExpand={toggleExpand}
                 deleteExercise={deleteExercise}
                 changeWeight={changeWeight}
+                startEditing={startEditing}
               />
             )}
             showsVerticalScrollIndicator={false}
@@ -302,8 +345,13 @@ export default function App() {
               onChangeText={setRest}
               keyboardType="numeric"
             />
-            <TouchableOpacity style={styles.button} onPress={addExercise}>
-              <Text style={styles.buttonText}>Hinzufügen</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={editingExerciseId ? saveEdits : addExercise}
+            >
+              <Text style={styles.buttonText}>
+                {editingExerciseId ? "Änderungen speichern" : "Hinzufügen"}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
@@ -324,10 +372,6 @@ const styles = StyleSheet.create({
   safeAreaTop: {
     flex: 1,
     backgroundColor: "white",
-  },
-  safeAreaBottom: {
-    backgroundColor: "#0F1321", // Transparenter Hintergrund
-    // height: 0, // Keine zusätzliche Höhe
   },
   navbar: {
     flexDirection: "row",
@@ -354,10 +398,49 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "white",
   },
-  title: {
+  iconButton: {
+    backgroundColor: "white",
+    padding: 0,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+    zIndex: 10,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    width: "90%",
+    height: "90%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    marginTop: 10,
+    marginBottom: 20,
   },
   input: {
     width: "80%",
@@ -378,199 +461,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-
-  listItem: {
-    width: desiredWidth,
-    alignSelf: "center",
-    alignSelf: "center", // Centers the listItem in its container horizontally
-    padding: 10,
-    backgroundColor: "#0F1321",
-    borderRadius: 5,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between", // Horizontally centers the content of the listItem
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 1.41,
-    elevation: 2,
-  },
-  additionalDetails: {
-    width: desiredWidth,
-    alignSelf: "center",
-    backgroundColor: "#0F1321",
-    padding: 10,
-
-    alignSelf: "center",
-    // borderBottomLeftRadius: 5,
-    // borderBottomRightRadius: 5,
-    marginTop: 0, // Kein zusätzlicher Abstand zum oberen ListItem
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 1.41,
-    elevation: 2,
-    display: "flex",
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  arrowContainer: {
-    marginTop: 0, // Kein zusätzlicher Abstand zum oberen ListItem
-
-    // Positionieren Sie den Pfeil am unteren Rand
-    alignItems: "center", // Zentriert den Pfeil horizontal
-    justifyContent: "center", // Zentriert den Pfeil vertikal
-    backgroundColor: "#0F1321",
-    marginBottom: 10,
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5,
-  },
-  detailTextWrapper: {
-    backgroundColor: "#D9DDEF",
-    borderRadius: 100,
-    margin: 5,
-    paddingHorizontal: 5,
-  },
-  detailText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#0F1321",
-  },
-
-  exerciseLeft: {
-    display: "flex",
-  },
-  exerciseInfo: {
-    display: "flex",
-    flexDirection: "row",
-  },
-  weightLeftText: {
-    fontSize: 30,
-    fontWeight: "bold",
-  },
-  exerciseText: {
-    fontWeight: "bold",
-    color: "white",
-    fontSize: 30,
-  },
-  weightRightText: {
-    fontSize: 10,
-  },
-  exerciseInfo: {
-    flexDirection: "row",
-    alignItems: "baseline", // Diese Zeile hinzufügen
-  },
-  weightLeftTextBold: {
-    fontSize: 60,
-    fontWeight: "bold",
-    color: "#93D5E1",
-    // Eventuell weitere Anpassungen zur Feinabstimmung
-  },
-  weightRightTextSmall: {
-    fontSize: 16,
-    color: "#93D5E1",
-    // Eventuell weitere Anpassungen zur Feinabstimmung
-  },
-  weightButtons: {
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  plusButton: {
-    // backgroundColor: "red",
-    fontSize: 60,
-    fontWeight: "bold",
-    color: "white",
-    lineHeight: 60, // Einstellen auf die gleiche Größe wie fontSize oder leicht größer/kleiner
-  },
-  minusButton: {
-    // backgroundColor: "blue",
-    fontSize: 60,
-    fontWeight: "bold",
-    color: "white",
-    lineHeight: 60, // Einstellen auf die gleiche Größe wie fontSize oder leicht größer/kleiner
-  },
-  weightButtonText: {
-    color: "white",
-    fontSize: 60,
-    fontWeight: "bold",
-  },
-  rightAction: {
-    backgroundColor: "red",
-    borderTopRightRadius: 5,
-    borderBottomRightRadius: 5,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  deleteButton: {
-    backgroundColor: "red",
-    justifyContent: "center",
-    alignItems: "center",
-    borderTopRightRadius: 5,
-    borderBottomRightRadius: 5,
-    padding: 15,
-  },
-  iconButton: {
-    backgroundColor: "white",
-    padding: 0,
-    borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    position: "absolute", // Absolute Positionierung
-    bottom: 20, // Abstand vom unteren Rand des Bildschirms
-    alignSelf: "center", // Zentriert den Button horizontal im Container
-    zIndex: 10, // Stellt sicher, dass der Button über den ListItems liegt
-  },
-
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 22,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  modalView: {
-    margin: 20,
-    width: "90%", // Modal nimmt fast die gesamte Breite ein
-    height: "90%", // Modal nimmt fast die gesamte Höhe ein
-    backgroundColor: "white",
-    borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  optionalHeading: {
-    fontSize: 18,
-    fontStyle: "italic",
-    marginTop: 10,
-    marginBottom: 10,
-  },
   cancelButton: {
     marginTop: 20,
     textDecorationLine: "underline",
     color: "blue",
     fontSize: 18,
+  },
+  safeAreaBottom: {
+    backgroundColor: "#0F1321",
   },
 })
