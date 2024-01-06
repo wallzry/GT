@@ -30,100 +30,123 @@ export default function App() {
   const [rest, setRest] = useState("")
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingExerciseId, setEditingExerciseId] = useState(null)
-  const [exercisesList, setExercisesList] = useState([
-    {
-      id: "1",
-      name: "Kniebeugen",
-      weight: 60,
-      repetitions: 10,
-      sets: 3,
-      speed: "1-1-3",
-      oneRepMax: 100,
-      rest: 60,
-      isExpanded: false,
-    },
-    {
-      id: "2",
-      name: "Bankdrücken",
-      weight: 70,
-      repetitions: 8,
-      sets: 3,
-      speed: "2-0-2",
-      oneRepMax: 120,
-      rest: 90,
-      isExpanded: true,
-    },
-    {
-      id: "3",
-      name: "Kreuzheben",
-      weight: 80,
-      repetitions: 6,
-      sets: 4,
-      speed: "3-1-1",
-      oneRepMax: 150,
-      rest: 120,
-      isExpanded: false,
-    },
-    {
-      id: "4",
-      name: "Schulterdrücken",
-      weight: 40,
-      repetitions: 12,
-      sets: 3,
-      speed: "4-0-1",
-      oneRepMax: 70,
-      rest: 60,
-      isExpanded: false,
-    },
-    {
-      id: "5",
-      name: "Klimmzüge",
-      weight: 0,
-      repetitions: 10,
-      sets: 3,
-      speed: "2-2-4",
-      oneRepMax: null,
-      rest: 90,
-      isExpanded: false,
-    },
-    {
-      id: "6",
-      name: "nur1",
-      weight: 34,
-      repetitions: 10,
-      sets: "",
-      speed: "",
-      oneRepMax: "",
-      rest: "",
-      isExpanded: "",
-    },
-    {
-      id: "7",
-      name: "keins",
-      weight: 22,
-      repetitions: "",
-      sets: "",
-      speed: "",
-      oneRepMax: "",
-      rest: "",
-      isExpanded: "",
-    },
-  ])
+  const [currentDay, setCurrentDay] = useState("Leg Day")
+  const [days, setDays] = useState({
+    "Leg Day": [
+      {
+        id: "1",
+        name: "Kniebeugen",
+        weight: 60,
+        repetitions: 10,
+        sets: 3,
+        speed: "1-1-3",
+        oneRepMax: 100,
+        rest: 60,
+        isExpanded: false,
+      },
+      {
+        id: "2",
+        name: "Bankdrücken",
+        weight: 70,
+        repetitions: 8,
+        sets: 3,
+        speed: "2-0-2",
+        oneRepMax: 120,
+        rest: 90,
+        isExpanded: true,
+      },
+      {
+        id: "3",
+        name: "Kreuzheben",
+        weight: 80,
+        repetitions: 6,
+        sets: 4,
+        speed: "3-1-1",
+        oneRepMax: 150,
+        rest: 120,
+        isExpanded: false,
+      },
+      {
+        id: "4",
+        name: "Schulterdrücken",
+        weight: 40,
+        repetitions: 12,
+        sets: 3,
+        speed: "4-0-1",
+        oneRepMax: 70,
+        rest: 60,
+        isExpanded: false,
+      },
+    ],
+    "Chest Day": [
+      {
+        id: "5",
+        name: "Klimmzüge",
+        weight: 0,
+        repetitions: 10,
+        sets: 3,
+        speed: "2-2-4",
+        oneRepMax: null,
+        rest: 90,
+        isExpanded: false,
+      },
+      {
+        id: "6",
+        name: "nur1",
+        weight: 34,
+        repetitions: 10,
+        sets: "",
+        speed: "",
+        oneRepMax: "",
+        rest: "",
+        isExpanded: "",
+      },
+      {
+        id: "7",
+        name: "keins",
+        weight: 22,
+        repetitions: "",
+        sets: "",
+        speed: "",
+        oneRepMax: "",
+        rest: "",
+        isExpanded: "",
+      },
+    ],
+    // Fügen Sie hier weitere Tage hinzu
+  })
+
+  const goToNextDay = () => {
+    const dayNames = Object.keys(days)
+    const currentIndex = dayNames.indexOf(currentDay)
+    const nextIndex = (currentIndex + 1) % dayNames.length
+    setCurrentDay(dayNames[nextIndex])
+  }
+
+  const goToPreviousDay = () => {
+    const dayNames = Object.keys(days)
+    const currentIndex = dayNames.indexOf(currentDay)
+    const previousIndex = (currentIndex - 1 + dayNames.length) % dayNames.length
+    setCurrentDay(dayNames[previousIndex])
+  }
 
   const toggleExpand = (id) => {
-    setExercisesList(
-      exercisesList.map((item) => {
+    setDays({
+      ...days,
+      [currentDay]: days[currentDay].map((item) => {
         if (item.id === id) {
           return { ...item, isExpanded: !item.isExpanded }
         }
         return item
-      })
-    )
+      }),
+    })
   }
 
   // Funktion zum Starten des Bearbeitungsmodus
+  // Funktion zum Starten des Bearbeitungsmodus
   const startEditing = (id) => {
-    const exerciseToEdit = exercisesList.find((e) => e.id === id)
+    // Verwenden Sie days[currentDay], um die zu bearbeitende Übung zu finden.
+    const exerciseToEdit = days[currentDay].find((e) => e.id === id)
     if (exerciseToEdit) {
       setEditingExerciseId(id)
       setExercise(exerciseToEdit.name)
@@ -141,8 +164,9 @@ export default function App() {
 
   // Funktion zum Speichern der Bearbeitung
   const saveEdits = () => {
-    setExercisesList(
-      exercisesList.map((item) =>
+    setDays({
+      ...days,
+      [currentDay]: days[currentDay].map((item) =>
         item.id === editingExerciseId
           ? {
               ...item,
@@ -155,8 +179,8 @@ export default function App() {
               rest,
             }
           : item
-      )
-    )
+      ),
+    })
     setIsModalVisible(false)
     setEditingExerciseId(null)
     clearInputs()
@@ -200,19 +224,23 @@ export default function App() {
       return
     }
 
-    setExercisesList([
-      ...exercisesList,
-      {
-        id: Math.random().toString(),
-        name: exercise,
-        weight: parseFloat(weight),
-        repetitions,
-        sets,
-        speed,
-        oneRepMax,
-        rest,
-      },
-    ])
+    const newExercise = {
+      id: Math.random().toString(),
+      name: exercise,
+      weight: parseFloat(weight),
+      repetitions,
+      sets,
+      speed,
+      oneRepMax,
+      rest,
+      isExpanded: false, // Stellen Sie sicher, dass die neue Übung nicht erweitert ist
+    }
+
+    setDays({
+      ...days,
+      [currentDay]: [...days[currentDay], newExercise],
+    })
+
     clearInputs()
     setIsModalVisible(false)
   }
@@ -229,37 +257,41 @@ export default function App() {
   }
 
   const changeWeight = (id, delta) => {
-    setExercisesList(
-      exercisesList.map((item) => {
+    setDays({
+      ...days,
+      [currentDay]: days[currentDay].map((item) => {
         if (item.id === id) {
           return { ...item, weight: Math.max(0.25, item.weight + delta * 0.25) }
         }
         return item
-      })
-    )
+      }),
+    })
   }
 
   const deleteExercise = (id) => {
-    setExercisesList(exercisesList.filter((item) => item.id !== id))
+    setDays({
+      ...days,
+      [currentDay]: days[currentDay].filter((item) => item.id !== id),
+    })
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaTop}>
         <View style={styles.navbar}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={goToPreviousDay}>
             <AntDesign name="caretleft" size={24} color="white" />
           </TouchableOpacity>
           <View style={styles.navTitleContainer}>
-            <Text style={styles.navTitle}>Leg Day</Text>
+            <Text style={styles.navTitle}>{currentDay}</Text>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={goToNextDay}>
             <AntDesign name="caretright" size={24} color="white" />
           </TouchableOpacity>
         </View>
         <View style={styles.container}>
           <FlatList
-            data={exercisesList}
+            data={days[currentDay]}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <ListItem
