@@ -298,9 +298,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 100,
     padding: 5,
-    marginBottom: -14,
-    borderColor: "#D9DDEF",
-    borderWidth: 1,
+    marginBottom: -26,
+    // borderColor: "#D9DDEF",
+    // borderWidth: 1,
   },
   editButtonWrapper: {
     zIndex: 10,
