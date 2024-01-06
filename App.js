@@ -8,28 +8,17 @@ import {
   FlatList,
   Alert,
   SafeAreaView,
-  Animated,
   Keyboard,
   Modal,
 } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 
-import { Swipeable, GestureHandlerRootView } from "react-native-gesture-handler"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { Dimensions } from "react-native"
+import ListItem from "./components/ListItem"
 
 const { width: screenWidth } = Dimensions.get("window")
 const desiredWidth = screenWidth * 0.9
-
-const WeightDisplay = ({ weight }) => {
-  const [wholePart, fractionalPart] = weight.toFixed(2).split(".")
-  return (
-    <View style={styles.exerciseInfo}>
-      <Text style={styles.weightLeftTextBold}>{wholePart}.</Text>
-      <Text style={styles.weightRightTextSmall}>{fractionalPart} kg</Text>
-    </View>
-  )
-}
 
 export default function App() {
   const [exercise, setExercise] = useState("")
@@ -212,29 +201,6 @@ export default function App() {
     setExercisesList(exercisesList.filter((item) => item.id !== id))
   }
 
-  const renderRightActions = (progress, dragX, onPress) => {
-    const scale = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [1, 0.7],
-      extrapolate: "clamp",
-    })
-    const opacity = dragX.interpolate({
-      inputRange: [-100, -20, 0],
-      outputRange: [1, 0.5, 0],
-      extrapolate: "clamp",
-    })
-
-    return (
-      <Animated.View style={[styles.rightAction, { opacity }]}>
-        <TouchableOpacity onPress={onPress} style={styles.deleteButton}>
-          <Animated.View style={{ transform: [{ scale }] }}>
-            <AntDesign name="delete" size={30} color="white" />
-          </Animated.View>
-        </TouchableOpacity>
-      </Animated.View>
-    )
-  }
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaTop}>
@@ -254,140 +220,12 @@ export default function App() {
             data={exercisesList}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <Swipeable
-                renderRightActions={(progress, dragX) =>
-                  renderRightActions(progress, dragX, () =>
-                    deleteExercise(item.id)
-                  )
-                }
-              >
-                <TouchableOpacity
-                  onPress={() => toggleExpand(item.id)}
-                  activeOpacity={0.9}
-                >
-                  <View
-                    style={[
-                      styles.listItem,
-                      item.isExpanded &&
-                      (item.repetitions ||
-                        item.sets ||
-                        item.speed ||
-                        item.oneRepMax ||
-                        item.rest)
-                        ? {
-                            marginBottom: 0,
-                            borderBottomLeftRadius: 0,
-                            borderBottomRightRadius: 0,
-                          }
-                        : {
-                            marginBottom: 0,
-                            borderBottomLeftRadius: 0,
-                            borderBottomRightRadius: 0,
-                          },
-                    ]}
-                  >
-                    <View style={styles.exerciseLeft}>
-                      <WeightDisplay weight={item.weight} />
-                      <Text style={styles.exerciseText}>{item.name}</Text>
-                    </View>
-                    <View style={styles.weightButtons}>
-                      <TouchableOpacity
-                        onPress={() => changeWeight(item.id, 1)}
-                      >
-                        <Text style={styles.plusButton}>+</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => changeWeight(item.id, -1)}
-                      >
-                        <Text style={styles.minusButton}>-</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  {/* Zeige weitere Details, wenn isExpanded true ist */}
-                  {item.isExpanded &&
-                    (item.repetitions ||
-                      item.sets ||
-                      item.speed ||
-                      item.oneRepMax ||
-                      item.rest) && (
-                      <View style={styles.additionalDetails}>
-                        {item.repetitions && (
-                          <View style={styles.detailTextWrapper}>
-                            <Text style={styles.detailText}>
-                              <AntDesign
-                                name="reload1"
-                                size={20}
-                                color="#0F1321"
-                              />{" "}
-                              Reps: {item.repetitions}
-                            </Text>
-                          </View>
-                        )}
-                        {item.sets && (
-                          <View style={styles.detailTextWrapper}>
-                            <Text style={styles.detailText}>
-                              <AntDesign
-                                name="sync"
-                                size={20}
-                                color="#0F1321"
-                              />{" "}
-                              Sätze: {item.sets}
-                            </Text>
-                          </View>
-                        )}
-                        {item.speed && (
-                          <View style={styles.detailTextWrapper}>
-                            <Text style={styles.detailText}>
-                              <AntDesign
-                                name="dashboard"
-                                size={20}
-                                color="#0F1321"
-                              />{" "}
-                              Geschwindigkeit: {item.speed}
-                            </Text>
-                          </View>
-                        )}
-                        {item.oneRepMax && (
-                          <View style={styles.detailTextWrapper}>
-                            <Text style={styles.detailText}>
-                              <MaterialCommunityIcons
-                                name="fire-circle"
-                                size={20}
-                                color="#0F1321"
-                              />{" "}
-                              1-RM: {item.oneRepMax || "N/A"} kg
-                            </Text>
-                          </View>
-                        )}
-                        {item.rest && (
-                          <View style={styles.detailTextWrapper}>
-                            <Text style={styles.detailText}>
-                              <AntDesign
-                                name="pausecircleo"
-                                size={20}
-                                color="#0F1321"
-                              />
-                              Pause: {item.rest} Sekunden
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                    )}
-                  {(item.repetitions ||
-                    item.sets ||
-                    item.speed ||
-                    item.oneRepMax ||
-                    item.rest) && (
-                    <View style={styles.arrowContainer}>
-                      {item.isExpanded ? (
-                        <AntDesign name="up" size={24} color="white" />
-                      ) : (
-                        <AntDesign name="down" size={24} color="white" />
-                      )}
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </Swipeable>
+              <ListItem
+                item={item}
+                toggleExpand={toggleExpand}
+                deleteExercise={deleteExercise}
+                changeWeight={changeWeight}
+              />
             )}
             showsVerticalScrollIndicator={false}
           />
