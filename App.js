@@ -10,17 +10,16 @@ import {
   SafeAreaView,
   Keyboard,
   Modal,
+  Animated,
 } from "react-native"
 import AntDesign from "react-native-vector-icons/AntDesign"
-
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { Dimensions } from "react-native"
 import ListItem from "./components/ListItem"
-
-const { width: screenWidth } = Dimensions.get("window")
-const desiredWidth = screenWidth * 0.9
+import { PanGestureHandler, State } from "react-native-gesture-handler"
 
 export default function App() {
+  const [translateX, setTranslateX] = useState(new Animated.Value(0))
   const [exercise, setExercise] = useState("")
   const [weight, setWeight] = useState("")
   const [repetitions, setRepetitions] = useState("")
@@ -77,10 +76,32 @@ export default function App() {
         rest: 60,
         isExpanded: false,
       },
+      {
+        id: "5",
+        name: "ABC",
+        weight: 40,
+        repetitions: 12,
+        sets: 3,
+        speed: "4-0-1",
+        oneRepMax: 70,
+        rest: 60,
+        isExpanded: false,
+      },
+      {
+        id: "6",
+        name: "DEF",
+        weight: 40,
+        repetitions: 12,
+        sets: 3,
+        speed: "4-0-1",
+        oneRepMax: 70,
+        rest: 60,
+        isExpanded: false,
+      },
     ],
     "Chest Day": [
       {
-        id: "5",
+        id: "1",
         name: "Klimmzüge",
         weight: 0,
         repetitions: 10,
@@ -91,7 +112,7 @@ export default function App() {
         isExpanded: false,
       },
       {
-        id: "6",
+        id: "2",
         name: "nur1",
         weight: 34,
         repetitions: 10,
@@ -102,7 +123,7 @@ export default function App() {
         isExpanded: "",
       },
       {
-        id: "7",
+        id: "3",
         name: "keins",
         weight: 22,
         repetitions: "",
@@ -120,14 +141,45 @@ export default function App() {
     const dayNames = Object.keys(days)
     const currentIndex = dayNames.indexOf(currentDay)
     const nextIndex = (currentIndex + 1) % dayNames.length
-    setCurrentDay(dayNames[nextIndex])
+
+    // Starten der Animation nach links
+    Animated.timing(translateX, {
+      toValue: -0, // Bewegung nach links
+      duration: 0, // Dauer in Millisekunden
+      useNativeDriver: true, // Nutzt die native Animation Engine
+    }).start(() => {
+      translateX.setValue(0) // Setze den Animated Value zurück
+      setCurrentDay(dayNames[nextIndex]) // Aktualisiere den aktuellen Tag
+    })
   }
 
   const goToPreviousDay = () => {
     const dayNames = Object.keys(days)
     const currentIndex = dayNames.indexOf(currentDay)
     const previousIndex = (currentIndex - 1 + dayNames.length) % dayNames.length
-    setCurrentDay(dayNames[previousIndex])
+
+    // Starten der Animation nach rechts
+    Animated.timing(translateX, {
+      toValue: 0, // Bewegung nach rechts
+      duration: 0, // Dauer in Millisekunden
+      useNativeDriver: true, // Nutzt die native Animation Engine
+    }).start(() => {
+      translateX.setValue(0) // Setze den Animated Value zurück
+      setCurrentDay(dayNames[previousIndex]) // Aktualisiere den aktuellen Tag
+    })
+  }
+
+  const onSwipe = ({ nativeEvent }) => {
+    if (nativeEvent.state === State.END) {
+      // Überprüfen Sie, ob die Geste abgeschlossen ist
+      if (nativeEvent.translationX > 50) {
+        // Benutzer hat genug nach rechts gewischt
+        goToPreviousDay()
+      } else if (nativeEvent.translationX < -50) {
+        // Benutzer hat genug nach links gewischt
+        goToNextDay()
+      }
+    }
   }
 
   const toggleExpand = (id) => {
@@ -208,6 +260,11 @@ export default function App() {
     setSpeed(formatted) // Aktualisiere den Geschwindigkeitszustand mit dem formatierten Text
   }
 
+  // setze das geschwiendigkeit feld zurück wenn focus weil sonst löschen über keyboard nicht geht
+  const handleFocus = (stateSetter) => {
+    stateSetter("")
+  }
+
   const addExercise = () => {
     let errorMessage = ""
     if (exercise === "") {
@@ -275,18 +332,74 @@ export default function App() {
     })
   }
 
+  const expandAllItems = () => {
+    setDays({
+      ...days,
+      [currentDay]: days[currentDay].map((item) => ({
+        ...item,
+        isExpanded: true,
+      })),
+    })
+  }
+
+  const deexpandAllItems = () => {
+    setDays({
+      ...days,
+      [currentDay]: days[currentDay].map((item) => ({
+        ...item,
+        isExpanded: false,
+      })),
+    })
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaTop}>
-        <View style={styles.navbar}>
-          <TouchableOpacity onPress={goToPreviousDay}>
-            <AntDesign name="caretleft" size={24} color="white" />
-          </TouchableOpacity>
-          <View style={styles.navTitleContainer}>
-            <Text style={styles.navTitle}>{currentDay}</Text>
+        <PanGestureHandler onHandlerStateChange={onSwipe}>
+          <View style={styles.navbarContainer}>
+            <View style={styles.navbar}>
+              <TouchableOpacity onPress={goToPreviousDay}>
+                <AntDesign name="caretleft" size={40} color="white" />
+              </TouchableOpacity>
+              <Animated.View
+                style={[
+                  styles.navTitleContainer,
+                  {
+                    transform: [{ translateX }], // Fügt die animierte Bewegung hinzu
+                  },
+                ]}
+              >
+                <Text style={styles.navTitle}>{currentDay}</Text>
+              </Animated.View>
+              <TouchableOpacity onPress={goToNextDay}>
+                <AntDesign name="caretright" size={40} color="white" />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.navAddButton}>
+              <AntDesign name="pluscircleo" size={24} color="white" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={goToNextDay}>
-            <AntDesign name="caretright" size={24} color="white" />
+        </PanGestureHandler>
+        <View style={styles.expandButtons}>
+          <TouchableOpacity
+            style={styles.expandButton}
+            onPress={expandAllItems}
+          >
+            <MaterialCommunityIcons
+              name="arrow-expand-vertical"
+              size={24}
+              color="white"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.expandButton}
+            onPress={deexpandAllItems}
+          >
+            <MaterialCommunityIcons
+              name="arrow-collapse-vertical"
+              size={24}
+              color="white"
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.container}>
@@ -326,7 +439,10 @@ export default function App() {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Neue Übung</Text>
+            <Text style={styles.modalTitle}>
+              {" "}
+              {editingExerciseId ? "Übung bearbeiten" : "Neue Übung"}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Übung"
@@ -361,6 +477,7 @@ export default function App() {
               value={speed}
               onChangeText={formatSpeedInput} // Verwende die angepasste Funktion
               keyboardType="numeric"
+              onFocus={() => handleFocus(setSpeed)}
             />
 
             <TextInput
@@ -388,6 +505,7 @@ export default function App() {
             <TouchableOpacity
               onPress={() => {
                 setIsModalVisible(!isModalVisible)
+                setEditingExerciseId(null)
                 clearInputs()
               }}
             >
@@ -410,7 +528,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 10,
+    width: "70%",
+  },
+  navAddButton: {
+    color: "white",
+    position: "absolute",
+    right: 10,
+  },
+  navbarContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#0F1321",
+    position: "relative",
   },
   navTitleContainer: {
     backgroundColor: "#93D5E1",
@@ -501,5 +632,18 @@ const styles = StyleSheet.create({
   },
   safeAreaBottom: {
     backgroundColor: "#0F1321",
+  },
+  expandButtons: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 20,
+  },
+  expandButton: {
+    backgroundColor: "#0F1321",
+    padding: 5,
+    borderRadius: 5,
   },
 })
