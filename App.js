@@ -401,7 +401,9 @@ export default function App() {
       [newDayName]: [], // Fügen Sie einen leeren Array für die Übungen des neuen Tages hinzu
     })
 
+    setCurrentDay(newDayName) // Setzen Sie den neuen Tag als aktuellen Tag
     setNewDayName("") // Setzen Sie den Namen zurück
+    setIsNewDayModalVisible(false) // Schließen Sie das Modal
   }
 
   const deleteDay = (dayName) => {
@@ -435,6 +437,16 @@ export default function App() {
     setDayToEdit(null)
     setNewDayNameForEdit("")
     setIsRenameDayModalVisible(false)
+  }
+
+  const EmptyListMessage = () => {
+    return (
+      <View style={styles.emptyListContainer}>
+        <Text style={styles.emptyListText}>
+          Klicke unten auf den + Button um eine neue Übung hinzuzufügen
+        </Text>
+      </View>
+    )
   }
 
   return (
@@ -513,6 +525,7 @@ export default function App() {
                 startEditing={startEditing}
               />
             )}
+            ListEmptyComponent={EmptyListMessage} // Hier hinzugefügt
             showsVerticalScrollIndicator={false}
           />
 
@@ -881,5 +894,15 @@ const styles = StyleSheet.create({
   },
   disabledExpandButton: {
     backgroundColor: "#D9DDEF", // Hintergrundfarbe für deaktivierte Buttons
+  },
+  emptyListContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  emptyListText: {
+    fontSize: 16,
+    color: "grey",
+    textAlign: "center",
   },
 })
