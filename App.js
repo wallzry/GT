@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
   StyleSheet,
   Text,
@@ -20,6 +20,8 @@ import { PanGestureHandler, State } from "react-native-gesture-handler"
 
 export default function App() {
   const [translateX, setTranslateX] = useState(new Animated.Value(0))
+  const [allExpanded, setAllExpanded] = useState(false)
+  const [allCollapsed, setAllCollapsed] = useState(true)
   const [exercise, setExercise] = useState("")
   const [weight, setWeight] = useState("")
   const [repetitions, setRepetitions] = useState("")
@@ -29,6 +31,8 @@ export default function App() {
   const [rest, setRest] = useState("")
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [editingExerciseId, setEditingExerciseId] = useState(null)
+  const [isNewDayModalVisible, setIsNewDayModalVisible] = useState(false)
+  const [newDayName, setNewDayName] = useState("")
   const [currentDay, setCurrentDay] = useState("Leg Day")
   const [days, setDays] = useState({
     "Leg Day": [
@@ -136,6 +140,24 @@ export default function App() {
     ],
     // Fügen Sie hier weitere Tage hinzu
   })
+
+  const updateExpandCollapseState = () => {
+    const currentExercises = days[currentDay]
+    const expandedCount = currentExercises.filter(
+      (item) => item.isExpanded
+    ).length
+
+    const isAllExpanded = expandedCount === currentExercises.length
+    const isAllCollapsed = expandedCount === 0
+
+    // Zustände in einer einzigen Operation aktualisieren
+    setAllExpanded(isAllExpanded)
+    setAllCollapsed(isAllCollapsed)
+  }
+
+  useEffect(() => {
+    updateExpandCollapseState()
+  }, [days, currentDay])
 
   const goToNextDay = () => {
     const dayNames = Object.keys(days)
@@ -333,6 +355,8 @@ export default function App() {
   }
 
   const expandAllItems = () => {
+    if (allExpanded) return // Frühzeitige Rückkehr, wenn bereits alle expandiert sind
+
     setDays({
       ...days,
       [currentDay]: days[currentDay].map((item) => ({
@@ -343,6 +367,8 @@ export default function App() {
   }
 
   const deexpandAllItems = () => {
+    if (allCollapsed) return // Frühzeitige Rückkehr, wenn bereits alle deexpandiert sind
+
     setDays({
       ...days,
       [currentDay]: days[currentDay].map((item) => ({
@@ -350,6 +376,25 @@ export default function App() {
         isExpanded: false,
       })),
     })
+  }
+
+  const addNewDay = () => {
+    if (!newDayName.trim()) {
+      Alert.alert("Fehler", "Bitte geben Sie einen Namen für den Tag ein.")
+      return
+    }
+
+    if (days.hasOwnProperty(newDayName)) {
+      Alert.alert("Fehler", "Ein Tag mit diesem Namen existiert bereits.")
+      return
+    }
+
+    setDays({
+      ...days,
+      [newDayName]: [], // Fügen Sie einen leeren Array für die Übungen des neuen Tages hinzu
+    })
+
+    setNewDayName("") // Setzen Sie den Namen zurück
   }
 
   return (
@@ -375,30 +420,43 @@ export default function App() {
                 <AntDesign name="caretright" size={40} color="white" />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.navAddButton}>
+            <TouchableOpacity
+              onPress={() => setIsNewDayModalVisible(true)}
+              style={styles.navAddButton}
+            >
               <AntDesign name="pluscircleo" size={24} color="white" />
             </TouchableOpacity>
           </View>
         </PanGestureHandler>
         <View style={styles.expandButtons}>
           <TouchableOpacity
-            style={styles.expandButton}
+            style={[
+              styles.expandButton,
+              allExpanded ? styles.disabledExpandButton : null,
+            ]}
             onPress={expandAllItems}
+            disabled={allExpanded}
+            activeOpacity={1}
           >
             <MaterialCommunityIcons
               name="arrow-expand-vertical"
               size={24}
-              color="white"
+              color="white" // Entfernen der Farbänderung des Icons
             />
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.expandButton}
+            style={[
+              styles.expandButton,
+              allCollapsed ? styles.disabledExpandButton : null,
+            ]}
             onPress={deexpandAllItems}
+            disabled={allCollapsed}
+            activeOpacity={1}
           >
             <MaterialCommunityIcons
               name="arrow-collapse-vertical"
               size={24}
-              color="white"
+              color="white" // Entfernen der Farbänderung des Icons
             />
           </TouchableOpacity>
         </View>
@@ -429,6 +487,45 @@ export default function App() {
 
       <SafeAreaView style={styles.safeAreaBottom} />
 
+      {/* Modal zum hinzufügen eines neuen Trainingstages */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isNewDayModalVisible}
+        onRequestClose={() => {
+          setIsNewDayModalVisible(!isNewDayModalVisible)
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Neuen Tag hinzufügen</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Tagname"
+              value={newDayName}
+              onChangeText={setNewDayName}
+            />
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                addNewDay()
+                setIsNewDayModalVisible(false)
+              }}
+            >
+              <Text style={styles.buttonText}>Hinzufügen</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setIsNewDayModalVisible(false)
+              }}
+            >
+              <Text style={styles.cancelButton}>Abbrechen</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal zum hinzufügen und updaten einer Übung */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -645,5 +742,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#0F1321",
     padding: 5,
     borderRadius: 5,
+  },
+  disabledExpandButton: {
+    backgroundColor: "#D9DDEF", // Hintergrundfarbe für deaktivierte Buttons
   },
 })
