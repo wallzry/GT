@@ -34,6 +34,13 @@ export default function App() {
   const [isNewDayModalVisible, setIsNewDayModalVisible] = useState(false)
   const [newDayName, setNewDayName] = useState("")
   const [currentDay, setCurrentDay] = useState("Leg Day")
+  const [isDayOptionsModalVisible, setIsDayOptionsModalVisible] =
+    useState(false)
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false)
+  const [dayToEdit, setDayToEdit] = useState(null)
+  const [newDayNameForEdit, setNewDayNameForEdit] = useState("")
+  const [isRenameDayModalVisible, setIsRenameDayModalVisible] = useState(false)
+
   const [days, setDays] = useState({
     "Leg Day": [
       {
@@ -397,6 +404,39 @@ export default function App() {
     setNewDayName("") // Setzen Sie den Namen zurück
   }
 
+  const deleteDay = (dayName) => {
+    if (Object.keys(days).length > 1) {
+      const updatedDays = { ...days }
+      delete updatedDays[dayName]
+      setDays(updatedDays)
+      // Wählen Sie den ersten Tag in der aktualisierten Liste aus
+      setCurrentDay(Object.keys(updatedDays)[0])
+    } else {
+      Alert.alert("Fehler", "Sie können den letzten Tag nicht löschen.")
+    }
+  }
+
+  const renameDay = () => {
+    if (!newDayNameForEdit.trim()) {
+      Alert.alert("Fehler", "Bitte geben Sie einen gültigen Namen ein.")
+      return
+    }
+
+    if (days.hasOwnProperty(newDayNameForEdit)) {
+      Alert.alert("Fehler", "Ein Tag mit diesem Namen existiert bereits.")
+      return
+    }
+
+    const updatedDays = { ...days }
+    updatedDays[newDayNameForEdit] = updatedDays[dayToEdit]
+    delete updatedDays[dayToEdit]
+    setDays(updatedDays)
+    setCurrentDay(newDayNameForEdit)
+    setDayToEdit(null)
+    setNewDayNameForEdit("")
+    setIsRenameDayModalVisible(false)
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaTop}>
@@ -421,10 +461,10 @@ export default function App() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              onPress={() => setIsNewDayModalVisible(true)}
-              style={styles.navAddButton}
+              onPress={() => setIsEditModalVisible(true)}
+              style={styles.navEditButton}
             >
-              <AntDesign name="pluscircleo" size={24} color="white" />
+              <AntDesign name="edit" size={24} color="white" />
             </TouchableOpacity>
           </View>
         </PanGestureHandler>
@@ -486,6 +526,102 @@ export default function App() {
       </SafeAreaView>
 
       <SafeAreaView style={styles.safeAreaBottom} />
+
+      {/* Modal zum Umbenennen eines Tages */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isRenameDayModalVisible}
+        onRequestClose={() => {
+          setIsRenameDayModalVisible(!isRenameDayModalVisible)
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Tag umbenennen</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Neuer Tagname"
+              value={newDayNameForEdit}
+              onChangeText={setNewDayNameForEdit}
+            />
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                renameDay()
+              }}
+            >
+              <Text style={styles.buttonText}>Änderungen speichern</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setIsRenameDayModalVisible(false)
+              }}
+            >
+              <Text style={styles.cancelButton}>Abbrechen</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal zum bearbeiten der Trainingstage */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isEditModalVisible}
+        onRequestClose={() => {
+          setIsEditModalVisible(!isEditModalVisible)
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Tag bearbeiten</Text>
+
+            {/* Option zum Hinzufügen eines neuen Tages */}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setIsEditModalVisible(false)
+                setIsNewDayModalVisible(true)
+              }}
+            >
+              <Text style={styles.buttonText}>Neuen Tag hinzufügen</Text>
+            </TouchableOpacity>
+
+            {/* Option zum Umbenennen des aktuellen Tages */}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setIsEditModalVisible(false)
+                setDayToEdit(currentDay)
+                setNewDayNameForEdit(currentDay)
+                setIsRenameDayModalVisible(true)
+              }}
+            >
+              <Text style={styles.buttonText}>Tag umbenennen</Text>
+            </TouchableOpacity>
+
+            {/* Option zum Löschen des aktuellen Tages */}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                deleteDay(currentDay)
+                setIsEditModalVisible(false)
+              }}
+            >
+              <Text style={styles.buttonText}>Tag löschen</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setIsEditModalVisible(false)
+              }}
+            >
+              <Text style={styles.cancelButton}>Abbrechen</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Modal zum hinzufügen eines neuen Trainingstages */}
       <Modal
@@ -627,7 +763,7 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "70%",
   },
-  navAddButton: {
+  navEditButton: {
     color: "white",
     position: "absolute",
     right: 10,
@@ -655,7 +791,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 10,
+    paddingTop: 10,
     backgroundColor: "white",
   },
   iconButton: {
